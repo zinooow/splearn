@@ -6,39 +6,29 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
+import static tobyspring.splearn.domain.MemberFixture.createMemberRegisterRequest;
+import static tobyspring.splearn.domain.MemberFixture.getPasswordEncoder;
 
 class MemberTest {
 
     Member member;
     PasswordEncoder passwordEncoder;
+
     @BeforeEach
     void setUp() {
-        passwordEncoder = new PasswordEncoder() {
-            @Override
-            public String encode(String password) {
-                return password.toUpperCase();
-            }
-
-            @Override
-            public boolean match(String password, String passwordHash) {
-                return encode(password).equals(passwordHash);
-            }
-        };
-
-        member = Member.create(
-                new MemberCreateRequest("jinho0547@naver.com", "jinho", "secret")
-                , passwordEncoder);
+        passwordEncoder = getPasswordEncoder();
+        member = Member.register(createMemberRegisterRequest(), passwordEncoder);
     }
 
     @Test
-    void createMember() {
+    void registerMember() {
         assertThat(member.getStatus()).isEqualTo(MemberStatus.PENDING);
         assertEquals(MemberStatus.PENDING, member.getStatus());
     }
 
     @Test
     void nullNickname() {
-        assertThatThrownBy(() -> Member.create(new MemberCreateRequest("<EMAIL>", null, "secret"), null))
+        assertThatThrownBy(() -> Member.register(new MemberRegisterRequest("<EMAIL>", null, "secret"), null))
                 .isInstanceOf(NullPointerException.class);
     }
 
@@ -62,7 +52,7 @@ class MemberTest {
     @Test
     void verifyEmail() {
         assertThatThrownBy(() ->
-                Member.create(new MemberCreateRequest("invalid Email", "jinho", "secret"), passwordEncoder)
+                Member.register(createMemberRegisterRequest("invalid email"), passwordEncoder)
         ).isInstanceOf(IllegalArgumentException.class);
 
     }
