@@ -9,4 +9,5 @@ import tobyspring.splearn.domain.MemberRegisterRequest;
 * */
 public interface MemberRegister {
     Member register(MemberRegisterRequest request);
+
 }
