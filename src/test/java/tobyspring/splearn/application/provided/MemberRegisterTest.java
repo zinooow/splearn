@@ -1,77 +1,69 @@
 package tobyspring.splearn.application.provided;
 
+import jakarta.persistence.EntityManager;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
-import tobyspring.splearn.application.MemberService;
-import tobyspring.splearn.application.required.EmailSender;
-import tobyspring.splearn.application.required.MemberRepository;
-import tobyspring.splearn.domain.Email;
-import tobyspring.splearn.domain.Member;
-import tobyspring.splearn.domain.MemberStatus;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.transaction.annotation.Transactional;
+import tobyspring.splearn.SplearnTestConfiguration;
+import tobyspring.splearn.domain.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static tobyspring.splearn.domain.MemberFixture.createMemberRegisterRequest;
-import static tobyspring.splearn.domain.MemberFixture.getPasswordEncoder;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@SpringBootTest
+@Transactional
+@Import(SplearnTestConfiguration.class)
 class MemberRegisterTest {
+    private final MemberRegister memberRegister;
+    private final EntityManager entityManager;
 
+    public MemberRegisterTest(MemberRegister memberRegister, EntityManager entityManager) {
+        this.memberRegister = memberRegister;
+        this.entityManager = entityManager;
+    }
 
 
     @Test
-    void registerTestStub() {
-        MemberRegister register = new MemberService(
-                new MemberRepositoryStub(),
-                new EmailSenderStub(),
-                getPasswordEncoder()
-        );
-
-        Member member = register.register(createMemberRegisterRequest());
+    void register() {
+        Member member = memberRegister.register(MemberFixture.createMemberRegisterRequest());
 
         assertThat(member.getId()).isNotNull();
         assertThat(member.getStatus()).isEqualTo(MemberStatus.PENDING);
     }
 
+    @Test
+    void registerDuplicateEmail() {
+        Member member1 = memberRegister.register(MemberFixture.createMemberRegisterRequest());
+        assertThat(member1.getId()).isNotNull();
+
+        assertThatThrownBy(() -> memberRegister.register(MemberFixture.createMemberRegisterRequest()))
+                .isInstanceOf(DuplicateEmailException.class);
+
+    }
 
     @Test
-    void registerTestMock() {
-        EmailSenderMock emailSenderMock = new EmailSenderMock();
-        MemberRegister register = new MemberService(
-                new MemberRepositoryStub(), emailSenderMock, getPasswordEncoder()
-        );
+    void activate() {
+        Member member = memberRegister.register(MemberFixture.createMemberRegisterRequest());
+        entityManager.flush();
+        entityManager.clear();
 
-        Member member = register.register(createMemberRegisterRequest());
+        member = memberRegister.activate(member.getId());
+        entityManager.flush();
 
-        assertThat(member.getId()).isNotNull();
-        assertThat(member.getStatus()).isEqualTo(MemberStatus.PENDING);
-
-        assertThat(emailSenderMock.tos).hasSize(1);
-        assertThat(emailSenderMock.tos.getFirst()).isEqualTo(member.getEmail());
+        assertThat(member.getStatus()).isEqualTo(MemberStatus.ACTIVE);
     }
 
-    static class MemberRepositoryStub implements MemberRepository {
-        @Override
-        public Member save(Member member) {
-            ReflectionTestUtils.setField(member, "id", 1L);
-            return member;
-        }
+    @Test
+    void memberRegisterValidationFail() {
+        valid(new MemberRegisterRequest("invalid email", "nickname", "valid_secret"));
+        valid(new MemberRegisterRequest("jinho0547@naver.com", " ", "valid_secret"));
+        valid(new MemberRegisterRequest("jinho0547@naver.com", "nickname", " "));
     }
 
-    static class EmailSenderStub implements EmailSender {
-        @Override
-        public void send(Email email, String subject, String body) {
-        }
-    }
-
-    static class EmailSenderMock implements EmailSender {
-        List<Email> tos = new ArrayList<>();
-
-        @Override
-        public void send(Email email, String subject, String body) {
-            tos.add(email);
-        }
+    private void valid(MemberRegisterRequest request) {
+        assertThatThrownBy(() -> memberRegister.register(request))
+                .isInstanceOf(ConstraintViolationException.class);
     }
 }
-

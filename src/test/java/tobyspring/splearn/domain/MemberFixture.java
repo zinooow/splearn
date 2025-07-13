@@ -3,13 +3,13 @@ package tobyspring.splearn.domain;
 public class MemberFixture {
 
     public static MemberRegisterRequest createMemberRegisterRequest(String email) {
-        return new MemberRegisterRequest(email, "jinho", "secret");
+        return new MemberRegisterRequest(email, "jinho", "valid_secret");
     }
     public static MemberRegisterRequest createMemberRegisterRequest() {
         return createMemberRegisterRequest("jinho0547@naver.com");
     }
 
-    public static PasswordEncoder getPasswordEncoder() {
+    public static PasswordEncoder createPasswordEncoder() {
         return new PasswordEncoder() {
             @Override
             public String encode(String password) {
@@ -17,7 +17,7 @@ public class MemberFixture {
             }
 
             @Override
-            public boolean match(String password, String passwordHash) {
+            public boolean matches(String password, String passwordHash) {
                 return encode(password).equals(passwordHash);
             }
         };

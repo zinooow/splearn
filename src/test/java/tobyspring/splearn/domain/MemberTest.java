@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static tobyspring.splearn.domain.MemberFixture.createMemberRegisterRequest;
-import static tobyspring.splearn.domain.MemberFixture.getPasswordEncoder;
+import static tobyspring.splearn.domain.MemberFixture.createPasswordEncoder;
 
 class MemberTest {
 
@@ -16,7 +16,7 @@ class MemberTest {
 
     @BeforeEach
     void setUp() {
-        passwordEncoder = getPasswordEncoder();
+        passwordEncoder = createPasswordEncoder();
         member = Member.register(createMemberRegisterRequest(), passwordEncoder);
     }
 
@@ -28,7 +28,7 @@ class MemberTest {
 
     @Test
     void nullNickname() {
-        assertThatThrownBy(() -> Member.register(new MemberRegisterRequest("<EMAIL>", null, "secret"), null))
+        assertThatThrownBy(() -> Member.register(new MemberRegisterRequest("jinho0547@naver.com", null, "secret"), null))
                 .isInstanceOf(NullPointerException.class);
     }
 
@@ -41,12 +41,12 @@ class MemberTest {
 
     @Test
     void verifyPassword() {
-        assertThat(member.verifyPassword("secret", passwordEncoder)).isTrue();
+        assertThat(member.verifyPassword("valid_secret", passwordEncoder)).isTrue();
 
-        member.changePassword("changed", passwordEncoder);
+        member.changePassword("valid_changed", passwordEncoder);
 
-        assertThat(member.verifyPassword("secret", passwordEncoder)).isFalse();
-        assertThat(member.verifyPassword("changed", passwordEncoder)).isTrue();
+        assertThat(member.verifyPassword("valid_secret", passwordEncoder)).isFalse();
+        assertThat(member.verifyPassword("valid_changed", passwordEncoder)).isTrue();
     }
 
     @Test

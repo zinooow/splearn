@@ -1,10 +1,10 @@
 services:
-  mariadb:
-    image: 'mariadb:latest'
+  mysql:
+    image: 'mysql:latest'
     environment:
-      - 'MARIADB_DATABASE=splearn'
-      - 'MARIADB_PASSWORD=secret'
-      - 'MARIADB_ROOT_PASSWORD=verysecret'
-      - 'MARIADB_USER=spring'
+      - 'MYSQL_DATABASE=splearn'
+      - 'MYSQL_PASSWORD=secret'
+      - 'MYSQL_ROOT_PASSWORD=verysecret'
+      - 'MYSQL_USER=spring'
     ports:
       - '3306:3306'
