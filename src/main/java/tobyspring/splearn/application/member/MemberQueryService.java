@@ -16,12 +16,12 @@ public class MemberQueryService implements MemberFinder {
     private final MemberRepository memberRepository;
 
     @Override
-    public Member findMember(Long memberId) {
+    public Member find(Long memberId) {
         return memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("Member not found By ID: " + memberId));
     }
 
     @Override
-    public Member findMember(String email) {
+    public Member find(String email) {
         return memberRepository.findByEmail(new Email(email)).orElseThrow(() -> new IllegalArgumentException("Member not found By Email: " + email));
     }
 

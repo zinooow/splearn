@@ -1,7 +1,6 @@
-package tobyspring.splearn.domain;
+package tobyspring.splearn.domain.shared;
 
 import org.junit.jupiter.api.Test;
-import tobyspring.splearn.domain.shared.Email;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

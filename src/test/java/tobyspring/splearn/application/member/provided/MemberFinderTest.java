@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import tobyspring.splearn.SplearnTestConfiguration;
 import tobyspring.splearn.domain.member.Member;
-import tobyspring.splearn.domain.MemberFixture;
+import tobyspring.splearn.domain.member.MemberFixture;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -28,13 +28,13 @@ class MemberFinderTest {
     }
 
     @Test
-    void findMember() {
+    void find() {
         Member member = memberRegister.register(MemberFixture.createMemberRegisterRequest());
         entityManager.flush();
         entityManager.clear();
 
-        Member foundMember = memberFinder.findMember(member.getId());
-        Member foundMember2 = memberFinder.findMember(member.getEmail().address());
+        Member foundMember = memberFinder.find(member.getId());
+        Member foundMember2 = memberFinder.find(member.getEmail().address());
 
         assertThat(foundMember).isNotNull();
         assertThat(foundMember.getId()).isEqualTo(member.getId());
@@ -43,7 +43,7 @@ class MemberFinderTest {
 
     @Test
     void findFailMember() {
-        assertThatThrownBy(() -> memberFinder.findMember(999L)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> memberFinder.find(999L)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
